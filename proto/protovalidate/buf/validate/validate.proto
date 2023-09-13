@@ -20,6 +20,7 @@ import "buf/validate/expression.proto";
 import "buf/validate/priv/private.proto";
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 
 option go_package = "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate";
@@ -190,6 +191,8 @@ message FieldConstraints {
     AnyRules any = 20;
     DurationRules duration = 21;
     TimestampRules timestamp = 22;
+
+    MessageRules message = 27;
   }
 }
 
@@ -3692,3 +3695,48 @@ message TimestampRules {
     expression: "this < now-rules.within || this > now+rules.within ? 'value must be within %s of now'.format([rules.within]) : ''"
   }];
 }
+
+message MessageRules {
+  message Field {
+    string name = 1;
+    FieldConstraints constraints = 2;
+  }
+  repeated Field field = 1;
+}
+
+// EXAMPLE
+
+message Bar {
+  string baz = 1;
+  string bat = 2;
+}
+
+message Foo {
+  string id = 1;
+  string something_you_cant_mutate = 2;
+
+  Bar bar = 10;
+  string something_else_you_can_mutate = 11;
+
+  int64 create_time_cannot_mutate = 12;
+}
+
+message UpdateFooRequest {
+  Foo foo = 1;
+  google.protobuf.FieldMask field_mask = 2 [
+    (buf.validate.field).message.field = {
+      name: "field_mask",
+      constraints: {
+        repeated: {
+          items: {
+            string: {
+              in: "bar" // handles any path under bar, ie bar.baz, is ok
+              in: "something_else_you_can_mutate"
+            }
+          }
+        }
+      }
+    }
+  ];
+}
+
