@@ -176,6 +176,22 @@ message FieldConstraints {
   // }
   // ```
   bool ignore_empty = 26;
+
+  // `ignore_if` specifies that the validation rules of this field should be
+  // skipped if the expression evaluates to true. Within the expression,
+  // `this` refers to the containing message.
+  //
+  // ```proto
+  // message MyMessage {
+  //   optional bool disabled = 1;
+  //   optional MyOtherMessage nested = 2 [
+  //     // The runtime value of `disabled` in the containing message determines
+  //     // whether the validation rules of `nested` are ignored.
+  //     (buf.validate.field).ignore_if = "this.disabled";
+  //   ];
+  // }
+  Constraint ignore_if = 27;
+
   oneof type {
     // Scalar Field Types
     FloatRules float = 1;
