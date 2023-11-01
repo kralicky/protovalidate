@@ -2,7 +2,7 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: github.com/bufbuild/protovalidate/tools/internal/gen
+    default: buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go
     except:
       - buf.build/envoyproxy/protoc-gen-validate
 plugins:
